@@ -39,3 +39,31 @@ def test_missing_model_weights_response(client):
     finally:
         yolo_service.is_loaded = original_state
         yolo_service.error_message = original_msg
+
+def test_delete_detection_not_found(client):
+    response = client.delete("/api/detections/999999")
+    assert response.status_code == 404
+
+def test_delete_detection_success(client, db_session):
+    from backend.app.models.entities import Inspection
+    from datetime import datetime
+
+    insp = Inspection(
+        filename="temp_for_delete.jpg",
+        media_type="image",
+        original_path="uploads/temp.jpg",
+        status="completed",
+        defects_count=0,
+        high_priority_count=0,
+        processing_time_ms=10.0,
+        created_at=datetime.utcnow()
+    )
+    db_session.add(insp)
+    db_session.commit()
+    db_session.refresh(insp)
+    insp_id = insp.id
+
+    response = client.delete(f"/api/detections/{insp_id}")
+    assert response.status_code == 200
+    assert response.json()["id"] == insp_id
+

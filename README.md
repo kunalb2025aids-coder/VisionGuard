@@ -6,7 +6,7 @@
 [![Three.js](https://img.shields.io/badge/Three.js-WebGL_3D-black?style=for-the-badge&logo=three.js&logoColor=white)](https://threejs.org/)
 [![SQLAlchemy](https://img.shields.io/badge/SQLAlchemy-2.0+-D71F00?style=for-the-badge&logo=sqlalchemy&logoColor=white)](https://www.sqlalchemy.org/)
 [![WebSocket](https://img.shields.io/badge/WebSocket-Live_Stream-4A90E2?style=for-the-badge&logo=socket.io&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/API/WebSockets_API)
-[![Pytest](https://img.shields.io/badge/Tests-42%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
+[![Pytest](https://img.shields.io/badge/Tests-44%20Passed-brightgreen?style=for-the-badge&logo=pytest&logoColor=white)](https://docs.pytest.org/)
 
 **VisionGuard AI 2.0** is an enterprise-grade industrial command center and preventive maintenance intelligence platform designed for conveyor belt operations. Built with a high-performance Python/FastAPI backend, real Ultralytics YOLOv11 computer vision, an interactive Three.js 3D mechanical digital twin, a deterministic software-only sensor simulation engine, explainable ISO 10816 anomaly indicators, real-time WebSocket event streaming, and an evidence-grounded AI Maintenance Copilot.
 

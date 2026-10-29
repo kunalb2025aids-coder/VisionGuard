@@ -237,3 +237,36 @@ def get_detection_by_id(id: int, db: Session = Depends(get_db)):
     if not inspection:
         raise HTTPException(status_code=404, detail=f"Inspection record with ID {id} not found")
     return InspectionSchema.model_validate(inspection)
+
+@router.delete("/{id}", status_code=status.HTTP_200_OK)
+def delete_detection(id: int, db: Session = Depends(get_db)):
+    inspection = db.query(Inspection).filter(Inspection.id == id).first()
+    if not inspection:
+        raise HTTPException(status_code=404, detail=f"Inspection record with ID {id} not found")
+
+    # Clean up associated detections, tasks, alerts
+    from backend.app.models.entities import Alert
+    db.query(Detection).filter(Detection.inspection_id == id).delete(synchronize_session=False)
+    db.query(MaintenanceTask).filter(MaintenanceTask.inspection_id == id).delete(synchronize_session=False)
+    db.query(Alert).filter(Alert.inspection_id == id).delete(synchronize_session=False)
+
+    # Clean up disk files if they exist
+    for file_path in [inspection.original_path, inspection.result_path]:
+        if file_path and os.path.exists(file_path):
+            try:
+                os.remove(file_path)
+            except Exception:
+                pass
+
+    db.delete(inspection)
+    db.commit()
+
+    # Broadcast event
+    try:
+        from backend.app.services.event_bus import broadcast_sync
+        broadcast_sync("inspection.deleted", {"id": id}, source="detections_api")
+    except Exception:
+        pass
+
+    return {"message": f"Inspection #{id} deleted successfully", "id": id}
+

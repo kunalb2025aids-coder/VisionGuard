@@ -553,9 +553,14 @@ async function loadDetectionHistory() {
         <td>${i.processing_time_ms} ms</td>
         <td>${new Date(i.created_at).toLocaleString()}</td>
         <td>
-          <a href="${API_BASE}/${i.result_path}" target="_blank" class="btn btn-sm btn-outline-info">
-            <i class="bi bi-eye me-1"></i> View Output
-          </a>
+          <div class="d-flex gap-1">
+            <a href="${API_BASE}/${i.result_path}" target="_blank" class="btn btn-sm btn-outline-info">
+              <i class="bi bi-eye me-1"></i> View Output
+            </a>
+            <button class="btn btn-sm btn-outline-danger" onclick="deleteInspectionRecord(${i.id})" title="Delete inspection record">
+              <i class="bi bi-trash"></i>
+            </button>
+          </div>
         </td>
       </tr>
     `
@@ -563,6 +568,24 @@ async function loadDetectionHistory() {
       .join("");
   } catch (err) {
     tbody.innerHTML = `<tr><td colspan="7" class="text-danger py-4">Failed to load history: ${err.message}</td></tr>`;
+  }
+}
+
+async function deleteInspectionRecord(id) {
+  if (!confirm(`Are you sure you want to delete Inspection record #${id}?`)) return;
+
+  try {
+    const res = await fetch(`${API_BASE}/api/detections/${id}`, {
+      method: "DELETE"
+    });
+    if (!res.ok) throw new Error("Failed to delete inspection record");
+    loadDetectionHistory();
+    loadDashboard();
+    if (window.vgWS) {
+      window.vgWS.showToast("Record Deleted", `Inspection #${id} has been removed.`, "info");
+    }
+  } catch (err) {
+    alert(`Delete failed: ${err.message}`);
   }
 }
 
