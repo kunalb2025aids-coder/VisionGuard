@@ -241,14 +241,33 @@
         <div class="twin-container">
           <div class="twin-viewport">
             <div class="twin-overlay-controls">
-              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.resetCamera()" title="Reset Camera View">
-                <i class="bi bi-arrows-fullscreen me-1"></i> Reset View
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.setCameraView('iso')" title="Isometric 3D Perspective">
+                <i class="bi bi-box me-1 text-cyan"></i> Isometric
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.setCameraView('side')" title="Side Elevation View">
+                <i class="bi bi-layout-sidebar me-1 text-info"></i> Side View
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.setCameraView('top')" title="Top Overhead View">
+                <i class="bi bi-arrows-fullscreen me-1 text-success"></i> Overhead
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.setCameraView('motor')" title="Drive Motor Unit">
+                <i class="bi bi-cpu me-1 text-warning"></i> Drive Unit
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.setCameraView('scanner')" title="Vision AI Scanner Pod">
+                <i class="bi bi-camera me-1 text-danger"></i> AI Pod
               </button>
               <button type="button" class="btn btn-sm btn-dark" id="btn-twin-toggle-overlays" title="Toggle Defect Overlays">
-                <i class="bi bi-bounding-box me-1"></i> Defect Overlays
+                <i class="bi bi-bounding-box me-1 text-cyan"></i> Defect Markers
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.resetCamera()" title="Reset Camera View">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset
               </button>
             </div>
             <div id="twin-canvas-container"></div>
+            <div class="twin-hud-badge">
+              <div><span class="text-cyan">ALIGNMENT:</span> <span class="text-success"><i class="bi bi-check-circle-fill me-1"></i>CENTERED &plusmn;1.2mm</span></div>
+              <div><span class="text-cyan">CONVEYOR:</span> <span class="text-white">CONV-01</span> | <span class="text-cyan">SPEED:</span> <span id="twin-hud-speed" class="text-info">1.8 m/s</span> | <span class="text-cyan">TENSION:</span> <span class="text-white">12.4 kN</span></div>
+            </div>
           </div>
 
           <div class="twin-sidebar">
