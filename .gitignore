@@ -1,0 +1,32 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+env/
+venv/
+ENV/
+.env
+
+# Database
+*.db
+*.sqlite3
+
+# Uploads & Results (exclude runtime uploads except .gitkeep)
+uploads/*
+!uploads/.gitkeep
+results/*
+!results/.gitkeep
+
+# Models (ignore large model binaries except README)
+models/*.pt
+models/*.onnx
+models/*.engine
+!models/.gitkeep
+!models/README.md
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.log

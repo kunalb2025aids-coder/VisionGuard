@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VisionGuard AI 2.0 - Industrial Intelligence & Digital Twin</title>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <!-- Bootstrap 5 CSS & Icons -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.2/dist/chart.umd.min.js"></script>
+
+  <!-- Three.js & OrbitControls for 3D Digital Twin -->
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/three@0.160.0/examples/js/controls/OrbitControls.js"></script>
+
+  <!-- Custom Futuristic CSS -->
+  <link rel="stylesheet" href="/frontend/css/style.css">
+</head>
+<body>
+
+  <div id="app-container">
+
+    <!-- Cyber-Industrial Dark Sidebar -->
+    <aside class="sidebar">
+      <div class="brand-logo">
+        <i class="bi bi-shield-check"></i>
+        <span>VisionGuard</span>
+        <span class="brand-badge">2.0</span>
+      </div>
+
+      <ul class="nav-menu">
+        <li>
+          <a class="nav-link-custom active" data-page="dashboard">
+            <i class="bi bi-grid-1x2"></i> Dashboard
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="digital-twin">
+            <i class="bi bi-box"></i> 3D Digital Twin
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="telemetry">
+            <i class="bi bi-activity"></i> Telemetry & Simulator
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="camera">
+            <i class="bi bi-webcam"></i> Live Camera Feed
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="image-detection">
+            <i class="bi bi-image"></i> Image Detection
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="video-analysis">
+            <i class="bi bi-camera-reels"></i> Video Analysis
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="history">
+            <i class="bi bi-clock-history"></i> Detection History
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="maintenance">
+            <i class="bi bi-wrench"></i> Maintenance
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="reports">
+            <i class="bi bi-file-earmark-bar-graph"></i> Reports & Analytics
+          </a>
+        </li>
+        <li>
+          <a class="nav-link-custom" data-page="settings">
+            <i class="bi bi-gear"></i> Settings
+          </a>
+        </li>
+      </ul>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+
+      <!-- Top Header Bar with Global Asset Selector, Live WS Badge, and Copilot Button -->
+      <header class="top-header">
+        <div class="d-flex align-items-center gap-3">
+          <h2 class="page-title" id="current-page-title">Dashboard</h2>
+          
+          <!-- Global Asset Switcher -->
+          <div class="global-asset-bar">
+            <i class="bi bi-diagram-3-fill text-cyan"></i>
+            <span class="text-muted small">Asset:</span>
+            <select id="global-asset-select">
+              <option value="CONV-01" selected>CONV-01 (Line 1)</option>
+              <option value="CONV-02">CONV-02 (Line 2)</option>
+              <option value="CONV-03">CONV-03 (Line 3)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="header-status">
+          <!-- Real-Time WebSocket Pill -->
+          <div id="ws-status-badge" class="status-pill offline">
+            <i class="bi bi-wifi-off"></i> <span>WS Connecting...</span>
+          </div>
+
+          <!-- System Health Badge -->
+          <div id="system-status-badge" class="status-badge online">
+            <i class="bi bi-circle-fill" style="font-size: 0.5rem;"></i> System Online
+          </div>
+
+          <!-- AI Copilot Launcher Button -->
+          <button type="button" id="btn-toggle-copilot" class="btn btn-sm btn-outline-info d-flex align-items-center gap-2">
+            <i class="bi bi-robot"></i>
+            <span>AI Copilot</span>
+          </button>
+        </div>
+      </header>
+
+      <!-- Missing Model Weights Alert Banner -->
+      <div id="model-alert-banner" class="model-alert-banner" style="display: none;">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+        <div>
+          <strong>Model Weights Missing:</strong>
+          <span id="model-alert-text">
+            Custom conveyor belt defect predictions require trained model weights at <code>models/best.pt</code>. Run <code>python train_yolo.py</code> or upload weights.
+          </span>
+        </div>
+      </div>
+
+      <!-- PAGE 1: DASHBOARD -->
+      <section id="page-dashboard" class="page-view">
+        <div class="row g-3 mb-4">
+          <div class="col-md-3">
+            <div class="stat-card">
+              <div class="stat-icon"><i class="bi bi-search"></i></div>
+              <div>
+                <div class="stat-value" id="stat-total-inspections">0</div>
+                <div class="stat-label">Total Inspections</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <div class="stat-icon" style="color: #ef4444; background-color: rgba(239, 68, 68, 0.12);"><i class="bi bi-exclamation-octagon"></i></div>
+              <div>
+                <div class="stat-value" id="stat-total-defects">0</div>
+                <div class="stat-label">Total Defects Found</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <div class="stat-icon" style="color: #fb923c; background-color: rgba(249, 115, 22, 0.12);"><i class="bi bi-lightning-charge"></i></div>
+              <div>
+                <div class="stat-value" id="stat-high-priority">0</div>
+                <div class="stat-label">High Priority Defects</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="stat-card">
+              <div class="stat-icon" style="color: #10b981; background-color: rgba(16, 185, 129, 0.12);"><i class="bi bi-check-all"></i></div>
+              <div>
+                <div class="stat-value" id="stat-completed-maintenance">0</div>
+                <div class="stat-label">Completed Tasks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Row -->
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-bar-chart-fill me-2 text-info"></i>Defects by Category</div>
+              <div style="height: 250px;">
+                <canvas id="chart-defects-category"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-pie-chart-fill me-2 text-warning"></i>Defects by Severity</div>
+              <div style="height: 250px;">
+                <canvas id="chart-defects-severity"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trend & Recent History -->
+        <div class="row g-3">
+          <div class="col-md-6">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-graph-up me-2 text-success"></i>Inspection Trends</div>
+              <div style="height: 250px;">
+                <canvas id="chart-inspection-trends"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-clock-history me-2 text-primary"></i>Recent Inspection History</div>
+              <div class="table-responsive" style="max-height: 250px;">
+                <table class="table-dark-custom">
+                  <thead>
+                    <tr>
+                      <th>ID</th>
+                      <th>Filename</th>
+                      <th>Type</th>
+                      <th>Result</th>
+                      <th>Latency</th>
+                      <th>Date</th>
+                    </tr>
+                  </thead>
+                  <tbody id="recent-history-tbody">
+                    <tr><td colspan="6" class="text-center text-muted py-3">Loading statistics...</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: 3D DIGITAL TWIN -->
+      <section id="page-digital-twin" class="page-view" style="display: none;">
+        <div class="twin-container">
+          <div class="twin-viewport">
+            <div class="twin-overlay-controls">
+              <button type="button" class="btn btn-sm btn-dark" onclick="window.twin?.resetCamera()" title="Reset Camera View">
+                <i class="bi bi-arrows-fullscreen me-1"></i> Reset View
+              </button>
+              <button type="button" class="btn btn-sm btn-dark" id="btn-twin-toggle-overlays" title="Toggle Defect Overlays">
+                <i class="bi bi-bounding-box me-1"></i> Defect Overlays
+              </button>
+            </div>
+            <div id="twin-canvas-container"></div>
+          </div>
+
+          <div class="twin-sidebar">
+            <div class="card-custom p-3">
+              <div class="d-flex justify-content-between align-items-center mb-2">
+                <strong class="text-cyan"><i class="bi bi-gear-wide-connected me-1"></i><span id="twin-asset-name">CONV-01</span></strong>
+                <span id="twin-asset-health" class="badge bg-success">92% Health</span>
+              </div>
+              <div class="small text-muted mb-3">Interactive 3D Assembly. Click components to inspect telemetry, defect history, and maintenance status.</div>
+              
+              <div class="card-title-custom mb-2"><span>Components</span> <small class="text-muted" style="font-size: 0.75rem;">Raycast Select</small></div>
+              <div id="twin-components-list" style="max-height: 220px; overflow-y: auto;">
+                <div class="text-muted small p-2">Loading assembly components...</div>
+              </div>
+            </div>
+
+            <div id="twin-detail-panel">
+              <div class="card-custom p-3 text-center text-muted small">
+                <i class="bi bi-cursor-fill d-block fs-3 mb-2 text-cyan"></i>
+                Select a component in the 3D viewport or list above to inspect live diagnostics.
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: TELEMETRY & SIMULATOR -->
+      <section id="page-telemetry" class="page-view" style="display: none;">
+        <!-- Software Simulation Engine Notice -->
+        <div class="simulation-banner">
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-cpu-fill text-cyan fs-5"></i>
+            <div>
+              <strong>Software-Only Deterministic Sensor Simulator Active</strong>
+              <div class="small text-muted">All readings generated with <code>source="simulation"</code>. Zero external hardware required.</div>
+            </div>
+          </div>
+          <span class="badge bg-info text-dark font-monospace" id="pred-engine-badge">Rule-Based + ML Ready</span>
+        </div>
+
+        <!-- Simulation Controls Bar -->
+        <div class="card-custom p-3 mb-4">
+          <div class="row g-2 align-items-center">
+            <div class="col-md-4">
+              <label class="form-label small text-muted mb-1">Select Injection Scenario</label>
+              <select id="sim-scenario-select" class="form-select form-select-dark">
+                <option value="normal">Normal Operation (Healthy Baseline)</option>
+                <option value="vibration_increase">Gradual Vibration Increase (Bearing Wear)</option>
+                <option value="temp_anomaly">Temperature Anomaly (Motor Overheating)</option>
+                <option value="belt_speed_variation">Belt Speed Variation (Drive Slippage)</option>
+                <option value="combined_anomaly">Combined Anomaly (Multiple Failures)</option>
+              </select>
+            </div>
+            <div class="col-md-8 d-flex align-items-end gap-2">
+              <button type="button" id="btn-sim-trigger" class="btn btn-primary btn-sm flex-grow-1 py-2">
+                <i class="bi bi-play-circle-fill me-1"></i> Inject Scenario
+              </button>
+              <button type="button" id="btn-sim-step" class="btn btn-outline-info btn-sm py-2">
+                <i class="bi bi-skip-forward-fill me-1"></i> Step Clock
+              </button>
+              <button type="button" id="btn-sim-pause" class="btn btn-outline-warning btn-sm py-2">
+                <i class="bi bi-pause-fill me-1"></i> Pause
+              </button>
+              <button type="button" id="btn-sim-reset" class="btn btn-outline-secondary btn-sm py-2">
+                <i class="bi bi-arrow-counterclockwise me-1"></i> Reset Baseline
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metric Gauges Grid -->
+        <div class="telemetry-grid">
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Vibration RMS</span>
+              <span id="metric-status-vibration" class="metric-pill pill-normal">NORMAL</span>
+            </div>
+            <div class="metric-value text-cyan" id="metric-val-vibration">1.8 mm/s</div>
+            <div class="small text-muted">Threshold: 4.5 mm/s</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Motor Temp</span>
+              <span id="metric-status-temperature" class="metric-pill pill-normal">NORMAL</span>
+            </div>
+            <div class="metric-value text-warning" id="metric-val-temperature">48.2 °C</div>
+            <div class="small text-muted">Threshold: 75.0 °C</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Motor Current</span>
+              <span id="metric-status-motor_current" class="metric-pill pill-normal">NORMAL</span>
+            </div>
+            <div class="metric-value text-success" id="metric-val-motor_current">28.4 A</div>
+            <div class="small text-muted">Threshold: 45.0 A</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Belt Speed</span>
+              <span id="metric-status-belt_speed" class="metric-pill pill-normal">NORMAL</span>
+            </div>
+            <div class="metric-value text-info" id="metric-val-belt_speed">1.8 m/s</div>
+            <div class="small text-muted">Nominal: 1.8 m/s</div>
+          </div>
+
+          <div class="metric-card">
+            <div class="metric-header">
+              <span>Bearing Temp</span>
+              <span id="metric-status-bearing_temp" class="metric-pill pill-normal">NORMAL</span>
+            </div>
+            <div class="metric-value text-light" id="metric-val-bearing_temp">52.1 °C</div>
+            <div class="small text-muted">Threshold: 80.0 °C</div>
+          </div>
+        </div>
+
+        <!-- Telemetry Graph & Explainable Anomaly Cards -->
+        <div class="row g-3">
+          <div class="col-md-7">
+            <div class="card-custom">
+              <div class="card-title-custom">
+                <span><i class="bi bi-graph-up-arrow me-2 text-cyan"></i>Live Sensor Telemetry Stream</span>
+                <small class="text-muted">Updated Every 3s</small>
+              </div>
+              <div style="height: 300px;">
+                <canvas id="telemetry-chart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-5">
+            <div class="card-custom">
+              <div class="card-title-custom">
+                <span><i class="bi bi-shield-exclamation me-2 text-warning"></i>Explainable Anomaly Indicators</span>
+                <span class="badge bg-secondary font-monospace">IsolationForest Ready</span>
+              </div>
+              <div id="pred-anomalies-list" style="max-height: 290px; overflow-y: auto;">
+                <div class="text-muted small text-center py-4">Checking anomaly detection engine...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE: LIVE INDUSTRIAL CAMERA STREAM -->
+      <section id="page-camera" class="page-view" style="display: none;">
+        <div class="row g-4">
+          <div class="col-md-5">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-webcam me-2 text-info"></i>Industrial Camera Configuration</div>
+
+              <form id="camera-config-form">
+                <div class="mb-3">
+                  <label class="form-label text-muted">Camera Source (RTSP URL or Device Index)</label>
+                  <input type="text" id="camera-source-input" class="form-control form-control-dark" value="0" placeholder="e.g. rtsp://192.168.1.100:554/live or 0">
+                  <span class="small text-muted">Use <code>0</code> for USB webcam or RTSP URL for industrial IP cameras.</span>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-muted">Manager Alert Email</label>
+                  <input type="email" id="camera-manager-email" class="form-control form-control-dark" value="manager@factory.com" required>
+                </div>
+
+                <div class="mb-3">
+                  <label class="form-label text-muted">Supervisor Alert Email</label>
+                  <input type="email" id="camera-supervisor-email" class="form-control form-control-dark" value="supervisor@factory.com" required>
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="button" id="btn-start-camera" class="btn btn-success flex-grow-1 py-2">
+                    <i class="bi bi-record-circle me-1"></i> Start Camera Stream
+                  </button>
+                  <button type="button" id="btn-stop-camera" class="btn btn-danger flex-grow-1 py-2" disabled>
+                    <i class="bi bi-stop-circle me-1"></i> Stop Camera
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <!-- Live Status Widget -->
+            <div class="card-custom mt-3">
+              <div class="card-title-custom"><i class="bi bi-bell-fill me-2 text-warning"></i>Automated Alert Dispatches</div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Stream Status:</span>
+                <strong id="cam-status-text" class="text-secondary">Stopped</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Frames Processed:</span>
+                <strong id="cam-frames-text">0</strong>
+              </div>
+              <div class="d-flex justify-content-between mb-2">
+                <span>Defects Detected:</span>
+                <strong id="cam-defects-text" class="text-danger">0</strong>
+              </div>
+              <div class="d-flex justify-content-between">
+                <span>Alerts Sent to Manager & Supervisor:</span>
+                <strong id="cam-alerts-text" class="text-warning">0</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card-custom">
+              <div class="card-title-custom">
+                <span><i class="bi bi-broadcast me-2 text-danger"></i>Live Industrial Camera Video Stream</span>
+                <span class="badge bg-danger text-uppercase pulse-live">Live Monitoring</span>
+              </div>
+
+              <div class="preview-container text-center" style="min-height: 360px; background: #000; display: flex; align-items: center; justify-content: center;">
+                <img id="live-mjpeg-feed" class="w-100 rounded" style="max-height: 480px; object-fit: contain; display: none;" alt="Live Industrial Stream">
+                <div id="mjpeg-placeholder" class="text-muted p-5">
+                  <i class="bi bi-camera-video-off display-3 d-block mb-3"></i>
+                  Click <strong>"Start Camera Stream"</strong> to monitor conveyor belt stream in real-time.
+                </div>
+              </div>
+
+              <p class="disclaimer-text mt-3">
+                * Real-time automated damage alerts automatically dispatch email & in-app notifications to Manager and Supervisor.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 2: IMAGE DEFECT DETECTION -->
+      <section id="page-image-detection" class="page-view" style="display: none;">
+        <div class="row g-4">
+          <div class="col-md-5">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-cloud-upload me-2 text-info"></i>Upload Conveyor Belt Image</div>
+              <form id="image-upload-form">
+                <div class="upload-dropzone mb-3" id="image-dropzone">
+                  <i class="bi bi-image upload-icon"></i>
+                  <p class="mb-1 text-white fw-bold">Click or drag conveyor belt image here</p>
+                  <span class="text-muted small">Supports JPG, PNG, WEBP, BMP</span>
+                  <input type="file" id="image-file-input" accept="image/*" style="display: none;">
+                </div>
+
+                <div class="mb-3 text-center">
+                  <img id="image-preview" class="preview-img rounded" style="display: none; max-height: 200px; margin: 0 auto;" alt="Image preview">
+                </div>
+
+                <button type="submit" id="btn-analyze-image" class="btn btn-primary w-100 py-2">
+                  <i class="bi bi-cpu me-2"></i> Run AI Defect Detection
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card-custom" id="image-result-card" style="display: none;">
+              <div class="card-title-custom">
+                <span><i class="bi bi-bounding-box-circles me-2 text-success"></i>AI Detections & Annotated Output</span>
+                <span class="badge bg-secondary" id="res-processing-time">0 ms</span>
+              </div>
+
+              <div class="preview-container mb-3 text-center">
+                <img id="annotated-image-res" class="preview-img" alt="Annotated Detection Output">
+              </div>
+
+              <div class="d-flex justify-content-between mb-2">
+                <span>Total Defects: <strong id="res-defect-count" class="text-info">0</strong></span>
+                <span>High Priority: <strong id="res-high-priority" class="text-danger">0</strong></span>
+              </div>
+
+              <div id="res-detections-list"></div>
+
+              <p class="disclaimer-text mt-3">
+                * Note: Defect severity estimates are preliminary until verified by maintenance engineers.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 3: VIDEO ANALYSIS -->
+      <section id="page-video-analysis" class="page-view" style="display: none;">
+        <div class="row g-4">
+          <div class="col-md-5">
+            <div class="card-custom">
+              <div class="card-title-custom"><i class="bi bi-camera-video me-2 text-info"></i>Upload Video Feed</div>
+              <form id="video-upload-form">
+                <div class="mb-3">
+                  <label class="form-label text-muted">Select Conveyor Belt Inspection Video</label>
+                  <input type="file" id="video-file-input" class="form-control form-control-dark" accept="video/*" required>
+                </div>
+                <button type="submit" id="btn-analyze-video" class="btn btn-primary w-100 py-2">
+                  <i class="bi bi-film me-2"></i> Analyze Video Feed
+                </button>
+              </form>
+            </div>
+          </div>
+
+          <div class="col-md-7">
+            <div class="card-custom" id="video-result-card" style="display: none;">
+              <div class="card-title-custom">
+                <span><i class="bi bi-play-circle me-2 text-success"></i>Annotated Video Output</span>
+                <span class="badge bg-secondary" id="video-res-time">0 ms</span>
+              </div>
+
+              <div class="preview-container mb-3">
+                <video id="annotated-video-res" controls class="w-100 rounded"></video>
+              </div>
+
+              <div>Detected Defect Instances: <strong id="video-res-defects" class="text-danger">0</strong></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 4: DETECTION HISTORY -->
+      <section id="page-history" class="page-view" style="display: none;">
+        <div class="card-custom">
+          <div class="card-title-custom"><i class="bi bi-journal-text me-2 text-info"></i>All Inspection Records</div>
+          <div class="table-responsive">
+            <table class="table-dark-custom">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Filename</th>
+                  <th>Type</th>
+                  <th>Defects</th>
+                  <th>Latency</th>
+                  <th>Timestamp</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <tr><td colspan="7" class="text-center text-muted py-4">Loading history...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 5: MAINTENANCE MANAGEMENT -->
+      <section id="page-maintenance" class="page-view" style="display: none;">
+        <div class="card-custom">
+          <div class="card-title-custom">
+            <span><i class="bi bi-tools me-2 text-warning"></i>Preventive Maintenance Tasks</span>
+          </div>
+
+          <div class="table-responsive">
+            <table class="table-dark-custom">
+              <thead>
+                <tr>
+                  <th>Task ID</th>
+                  <th>Title / Defect</th>
+                  <th>Severity</th>
+                  <th>Status</th>
+                  <th>Assigned To</th>
+                  <th>Due Date</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="maintenance-tbody">
+                <tr><td colspan="7" class="text-center text-muted py-4">Loading maintenance tasks...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 6: REPORTS & ANALYTICS -->
+      <section id="page-reports" class="page-view" style="display: none;">
+        <div class="card-custom mb-4">
+          <div class="card-title-custom"><i class="bi bi-file-earmark-spreadsheet me-2 text-success"></i>Inspection Summary Report</div>
+          <div class="row text-center my-3">
+            <div class="col-md-3">
+              <div class="text-muted small">Total Inspections</div>
+              <h3 id="report-stat-total" class="text-white">0</h3>
+            </div>
+            <div class="col-md-3">
+              <div class="text-muted small">Defects Detected</div>
+              <h3 id="report-stat-defects" class="text-info">0</h3>
+            </div>
+            <div class="col-md-3">
+              <div class="text-muted small">High Priority</div>
+              <h3 id="report-stat-high" class="text-danger">0</h3>
+            </div>
+            <div class="col-md-3">
+              <div class="text-muted small">Avg Inference Time</div>
+              <h3 id="report-stat-avg-time" class="text-warning">0 ms</h3>
+            </div>
+          </div>
+
+          <div class="mt-4 text-end">
+            <a href="/api/reports/export?type=full" download class="btn btn-success">
+              <i class="bi bi-download me-2"></i> Export Detailed CSV Report
+            </a>
+          </div>
+        </div>
+      </section>
+
+      <!-- PAGE 7: SETTINGS -->
+      <section id="page-settings" class="page-view" style="display: none;">
+        <div class="card-custom">
+          <div class="card-title-custom"><i class="bi bi-sliders me-2 text-info"></i>System Settings</div>
+
+          <div class="row g-3 col-md-8">
+            <div class="col-12">
+              <label class="form-label">YOLOv11 Model Weights Path</label>
+              <input type="text" class="form-control form-control-dark" value="models/best.pt" readonly>
+            </div>
+            <div class="col-6">
+              <label class="form-label">Confidence Threshold</label>
+              <input type="number" class="form-control form-control-dark" value="0.25" step="0.05" min="0.1" max="0.9">
+            </div>
+            <div class="col-6">
+              <label class="form-label">Enable SMTP Email Alerts</label>
+              <select class="form-select form-select-dark">
+                <option value="false">Disabled (In-app only)</option>
+                <option value="true">Enabled (via ENV variables)</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- AI Maintenance Copilot Slide-out Drawer -->
+  <aside id="copilot-drawer" class="copilot-drawer">
+    <div class="copilot-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-robot fs-5 text-cyan"></i>
+        <strong class="text-white">AI Maintenance Copilot</strong>
+      </div>
+      <button type="button" class="btn-close btn-close-white" id="btn-close-copilot"></button>
+    </div>
+
+    <div class="copilot-messages" id="copilot-messages"></div>
+
+    <div class="copilot-input-bar">
+      <input type="text" id="copilot-input" class="form-control form-control-dark" placeholder="Ask about inspections, vibration, work orders...">
+      <button type="button" id="btn-copilot-send" class="btn btn-primary px-3">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Real-time Toast Notifications Container -->
+  <div id="toast-container" class="vg-toast-container"></div>
+
+  <!-- Edit Maintenance Task Modal -->
+  <div class="modal fade" id="editTaskModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content bg-dark text-white border-secondary">
+        <div class="modal-header border-secondary">
+          <h5 class="modal-title"><i class="bi bi-pencil-square me-2 text-info"></i>Edit Maintenance Task</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <form id="edit-task-form">
+          <div class="modal-body">
+            <input type="hidden" id="edit-task-id">
+            <div class="mb-3">
+              <label class="form-label">Task Title</label>
+              <input type="text" id="edit-task-title" class="form-control form-control-dark" required>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">Status</label>
+                <select id="edit-task-status" class="form-select form-select-dark">
+                  <option value="Pending">Pending</option>
+                  <option value="In Progress">In Progress</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select>
+              </div>
+              <div class="col-6">
+                <label class="form-label">Severity</label>
+                <select id="edit-task-severity" class="form-select form-select-dark">
+                  <option value="Low">Low</option>
+                  <option value="Medium">Medium</option>
+                  <option value="High">High</option>
+                  <option value="Critical">Critical</option>
+                </select>
+              </div>
+            </div>
+            <div class="row g-2 mb-3">
+              <div class="col-6">
+                <label class="form-label">Assigned Personnel</label>
+                <input type="text" id="edit-task-assigned" class="form-control form-control-dark">
+              </div>
+              <div class="col-6">
+                <label class="form-label">Due Date</label>
+                <input type="date" id="edit-task-duedate" class="form-control form-control-dark">
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Notes</label>
+              <textarea id="edit-task-notes" class="form-control form-control-dark" rows="3"></textarea>
+            </div>
+          </div>
+          <div class="modal-footer border-secondary">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Task Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS Bundle -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Modular VisionGuard AI 2.0 Scripts -->
+  <script src="/frontend/js/ws-client.js"></script>
+  <script src="/frontend/js/digital-twin.js"></script>
+  <script src="/frontend/js/telemetry.js"></script>
+  <script src="/frontend/js/copilot.js"></script>
+  <script src="/frontend/js/app.js"></script>
+</body>
+</html>

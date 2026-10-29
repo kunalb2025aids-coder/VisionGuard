@@ -1,0 +1,15 @@
+# VisionGuard AI - Dataset Configuration for Conveyor Belt Defect Detection
+# Save a copy of this file as docs/data.yaml and update dataset absolute/relative paths.
+
+path: ./dataset # Dataset root directory
+train: images/train
+val: images/val
+test: images/test
+
+# Defect Classes (5 Classes)
+names:
+  0: Cracks
+  1: Tears
+  2: Misalignment
+  3: Roller faults
+  4: Material spillage

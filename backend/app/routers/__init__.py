@@ -1,0 +1,12 @@
+﻿from backend.app.routers.health import router as health_router
+from backend.app.routers.dashboard import router as dashboard_router
+from backend.app.routers.detections import router as detections_router
+from backend.app.routers.maintenance import router as maintenance_router
+from backend.app.routers.alerts import router as alerts_router
+from backend.app.routers.reports import router as reports_router
+from backend.app.routers.camera import router as camera_router
+from backend.app.routers.assets import router as assets_router
+from backend.app.routers.telemetry import router as telemetry_router
+from backend.app.routers.predictions import router as predictions_router
+from backend.app.routers.copilot import router as copilot_router
+from backend.app.routers.ws import router as ws_router
